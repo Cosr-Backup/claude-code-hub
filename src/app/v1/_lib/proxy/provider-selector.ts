@@ -87,6 +87,30 @@ function providerSupportsModel(provider: Provider, requestedModel: string): bool
   // allowedModels 是声明列表，用于调度器匹配提供商
   // 用户可以手动填写任意模型名称（不限于真实模型），用于声明该提供商"支持"哪些模型
 
+  // 2b.1. openai-compatible 供应商 + joinClaudePool
+  // 这允许 openai-compatible 供应商同时处理：
+  // - Claude 格式请求（/v1/messages，claude-* 模型）- 已在 Case 1 处理
+  // - Response API 格式请求（/v1/responses，gpt-* 等模型）
+  // - OpenAI 格式请求（/v1/chat/completions，任意模型）
+  if (provider.providerType === "openai-compatible" && provider.joinClaudePool) {
+    // 如果配置了 allowedModels，检查模型是否在列表中
+    if (provider.allowedModels && provider.allowedModels.length > 0) {
+      // 检查原始模型或重定向后的模型
+      if (provider.allowedModels.includes(requestedModel)) {
+        return true;
+      }
+      const redirectedModel = provider.modelRedirects?.[requestedModel];
+      if (redirectedModel && provider.allowedModels.includes(redirectedModel)) {
+        return true;
+      }
+      return false;
+    }
+
+    // 未设置 allowedModels：允许所有模型（最大灵活性）
+    return true;
+  }
+
+  // 2b.2. 其他非 Anthropic 供应商（正常逻辑）
   // 未设置 allowedModels 或为空数组：接受任意模型（由上游提供商判断）
   if (!provider.allowedModels || provider.allowedModels.length === 0) {
     return true;

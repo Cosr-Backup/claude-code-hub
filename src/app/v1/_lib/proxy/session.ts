@@ -136,13 +136,11 @@ export class ProxySession {
     let formatFromPath: ClientFormat | null = null;
     if (normalizedPath.startsWith("/v1/chat/completions")) {
       formatFromPath = "openai";
-    } else if (normalizedPath.startsWith("/v1/responses")) {
-      formatFromPath = "response";
     } else if (normalizedPath.startsWith("/v1/messages")) {
       formatFromPath = "claude";
     }
 
-    // 回退到基于请求体的自动检测
+    // 回退到基于请求体的自动检测（例如 /v1/responses 可能是 Response API 或 Gemini CLI）
     const detectedFormat = formatFromPath ?? detectClientFormat(bodyResult.requestMessage);
     session.setOriginalFormat(detectedFormat);
 
