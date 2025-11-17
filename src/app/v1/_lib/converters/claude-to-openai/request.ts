@@ -120,16 +120,21 @@ export function transformClaudeRequestToOpenAI(
 ): Record<string, unknown> {
   const req = request as ClaudeRequest;
 
+  // 检测是否为 count_tokens 请求
+  // Claude count_tokens 端点不支持 stream，OpenAI 也应该禁用 stream
+  const isCountTokens = req.max_tokens === 0 || (req as Record<string, unknown>)._isCountTokens;
+
   // 基础 OpenAI 请求结构
   const output: OpenAIChatCompletionRequest = {
     model,
     messages: [],
-    stream,
+    stream: isCountTokens ? false : stream, // count_tokens 请求强制禁用 stream
   };
 
   logger.debug("[Claude→OpenAI] Starting request transformation", {
     model,
-    stream,
+    stream: output.stream,
+    isCountTokens,
     hasSystem: !!req.system,
     messageCount: req.messages?.length || 0,
     hasTools: !!req.tools,
@@ -376,7 +381,17 @@ export function transformClaudeRequestToOpenAI(
 
   // 5. 传递其他参数
   if (req.max_tokens) {
-    output.max_tokens = req.max_tokens;
+    // 特殊处理：count_tokens 请求（max_tokens=0）
+    // OpenAI 不支持 max_tokens=0，使用 1 来模拟 token 计数
+    if (isCountTokens && req.max_tokens === 0) {
+      output.max_tokens = 1;
+      logger.debug("[Claude→OpenAI] Adjusted max_tokens for count_tokens endpoint", {
+        original: 0,
+        adjusted: 1,
+      });
+    } else {
+      output.max_tokens = req.max_tokens;
+    }
   }
 
   if (req.temperature !== undefined) {
@@ -392,6 +407,7 @@ export function transformClaudeRequestToOpenAI(
     hasTools: !!output.tools,
     toolsCount: output.tools?.length || 0,
     maxTokens: output.max_tokens,
+    isCountTokens,
   });
 
   return output as unknown as Record<string, unknown>;

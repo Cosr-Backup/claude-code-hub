@@ -14,7 +14,9 @@ import type { ProviderChainItem } from "@/types/message";
  * 核心逻辑：
  * 1. Claude 模型请求 (claude-*)：
  *    - Anthropic 提供商：根据 allowedModels 白名单判断
- *    - 非 Anthropic 提供商 + joinClaudePool：检查模型重定向是否指向 claude-* 模型
+ *    - 非 Anthropic 提供商 + joinClaudePool：
+ *      a. openai-compatible 类型：直接支持（通过格式转换器）
+ *      b. 其他类型（codex, gemini-cli）：检查模型重定向是否指向 claude-* 模型
  *    - 非 Anthropic 提供商（未加入 Claude 调度池）：不支持
  *
  * 2. 非 Claude 模型请求 (gpt-*, gemini-*, 或其他任意模型)：
@@ -47,8 +49,27 @@ function providerSupportsModel(provider: Provider, requestedModel: string): bool
 
     // 1b. 非 Anthropic 提供商 + joinClaudePool
     if (provider.joinClaudePool) {
+      if (provider.providerType === "openai-compatible") {
+        // OpenAI 兼容供应商：通过格式转换器支持 Claude 请求
+        // 1. 如果配置了 allowedModels，检查模型是否在列表中
+        if (provider.allowedModels && provider.allowedModels.length > 0) {
+          // 检查原始模型或重定向后的模型是否在列表中
+          if (provider.allowedModels.includes(requestedModel)) {
+            return true;
+          }
+          const redirectedModel = provider.modelRedirects?.[requestedModel];
+          if (redirectedModel && provider.allowedModels.includes(redirectedModel)) {
+            return true;
+          }
+          return false;
+        }
+
+        // 2. 未设置 allowedModels：允许所有模型（灵活配置）
+        return true;
+      }
+
+      // 其他非 Anthropic 供应商（codex, gemini-cli）：要求重定向到 Claude 模型
       const redirectedModel = provider.modelRedirects?.[requestedModel];
-      // 检查是否重定向到 claude 模型
       return redirectedModel?.startsWith("claude-") || false;
     }
 

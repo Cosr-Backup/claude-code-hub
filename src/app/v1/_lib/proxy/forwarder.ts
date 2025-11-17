@@ -568,11 +568,36 @@ export class ProxyForwarder {
       logger.debug("ProxyForwarder: Model redirected", { providerId: provider.id });
     }
 
+    // 设置 count_tokens 标识（用于转换器中的特殊处理）
+    if (session.isCountTokensRequest()) {
+      const requestMessage = session.request.message as Record<string, unknown>;
+      // 使用下划线前缀，确保在转发时会被 filterPrivateParameters 过滤
+      requestMessage._isCountTokens = true;
+    }
+
     // 请求格式转换（基于 client 格式和 provider 类型）
     const fromFormat: Format = mapClientFormatToTransformer(session.originalFormat);
     const toFormat: Format | null = provider.providerType
       ? mapProviderTypeToTransformer(provider.providerType)
       : null;
+
+    // 检测 stream 参数（不同格式可能使用不同字段）
+    const requestMessage = session.request.message as Record<string, unknown>;
+    let isStreamRequest = false;
+    if (typeof requestMessage.stream === "boolean") {
+      isStreamRequest = requestMessage.stream;
+    } else if (typeof requestMessage.response !== "undefined") {
+      // Response API (Codex) 使用 response.stream
+      const response = requestMessage.response as Record<string, unknown> | undefined;
+      if (response && typeof response.stream === "boolean") {
+        isStreamRequest = response.stream;
+      }
+    }
+
+    // count_tokens 端点强制禁用 stream
+    if (session.isCountTokensRequest()) {
+      isStreamRequest = false;
+    }
 
     if (fromFormat !== toFormat && fromFormat && toFormat) {
       try {
@@ -581,13 +606,14 @@ export class ProxyForwarder {
           toFormat,
           session.request.model || "",
           session.request.message,
-          true // 假设所有请求都是流式的
+          isStreamRequest
         );
 
         logger.debug("ProxyForwarder: Request format transformed", {
           from: fromFormat,
           to: toFormat,
           model: session.request.model,
+          stream: isStreamRequest,
         });
 
         // 更新 session 中的请求体
@@ -601,6 +627,7 @@ export class ProxyForwarder {
         // 转换失败时继续使用原始请求
       }
     }
+
 
     // Codex 请求清洗（即使格式相同也要执行，除非是官方客户端）
     // 目的：确保非官方客户端的请求也能通过 Codex 供应商的校验
@@ -692,6 +719,34 @@ export class ProxyForwarder {
         originalFormat: fromFormat,
         targetFormat: toFormat,
       });
+    }
+
+    // OpenAI Compatible 供应商：使用 /v1/chat/completions 端点
+    // 将 Claude 的 /v1/messages 路径重写为 OpenAI 标准端点
+    if (toFormat === "openai-compatible" && fromFormat === "claude") {
+      forwardUrl = new URL(session.requestUrl);
+      const originalPath = forwardUrl.pathname;
+
+      // 处理 Claude 的特殊端点
+      if (originalPath === "/v1/messages/count_tokens") {
+        // count_tokens 端点：OpenAI 没有对应端点，但可以使用 chat/completions 模拟
+        // 通过设置 max_tokens=1 来获取 token 计数
+        forwardUrl.pathname = "/v1/chat/completions";
+        logger.debug("ProxyForwarder: OpenAI Compatible count_tokens path rewrite", {
+          from: originalPath,
+          to: "/v1/chat/completions",
+          note: "Using max_tokens=1 to simulate token counting",
+        });
+      } else {
+        // 标准 messages 端点
+        forwardUrl.pathname = "/v1/chat/completions";
+        logger.debug("ProxyForwarder: OpenAI Compatible request path rewrite", {
+          from: originalPath,
+          to: "/v1/chat/completions",
+          originalFormat: fromFormat,
+          targetFormat: toFormat,
+        });
+      }
     }
 
     const proxyUrl = buildProxyUrl(provider.url, forwardUrl);
