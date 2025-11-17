@@ -94,6 +94,9 @@ export function ProviderForm({
   const [joinClaudePool, setJoinClaudePool] = useState<boolean>(
     sourceProvider?.joinClaudePool ?? false
   );
+  const [joinCodexPool, setJoinCodexPool] = useState<boolean>(
+    sourceProvider?.joinCodexPool ?? false
+  );
 
   // 熔断器配置（以分钟为单位显示，提交时转换为毫秒）
   // 允许 undefined，用户可以清空输入框，提交时使用默认值
@@ -221,6 +224,7 @@ export function ProviderForm({
             model_redirects?: Record<string, string> | null;
             allowed_models?: string[] | null;
             join_claude_pool?: boolean;
+            join_codex_pool?: boolean;
             priority?: number;
             weight?: number;
             cost_multiplier?: number;
@@ -247,6 +251,7 @@ export function ProviderForm({
             model_redirects: parsedModelRedirects,
             allowed_models: allowedModels.length > 0 ? allowedModels : null,
             join_claude_pool: joinClaudePool,
+            join_codex_pool: joinCodexPool,
             priority: priority,
             weight: weight,
             cost_multiplier: costMultiplier,
@@ -286,6 +291,7 @@ export function ProviderForm({
             model_redirects: parsedModelRedirects,
             allowed_models: allowedModels.length > 0 ? allowedModels : null,
             join_claude_pool: joinClaudePool,
+            join_codex_pool: joinCodexPool,
             // 使用配置的默认值：默认不启用、权重=1
             is_enabled: PROVIDER_DEFAULTS.IS_ENABLED,
             weight: weight,
@@ -569,6 +575,31 @@ export function ProviderForm({
                     </div>
                   );
                 })()}
+
+              {/* joinCodexPool 开关 - 仅 openai-compatible 供应商显示 */}
+              {providerType === "openai-compatible" && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor={isEdit ? "edit-join-codex-pool" : "join-codex-pool"}>
+                        {t("sections.routing.joinCodexPool.label")}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {t("sections.routing.joinCodexPool.desc")}
+                      </p>
+                    </div>
+                    <Switch
+                      id={isEdit ? "edit-join-codex-pool" : "join-codex-pool"}
+                      checked={joinCodexPool}
+                      onCheckedChange={setJoinCodexPool}
+                      disabled={isPending}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("sections.routing.joinCodexPool.help")}
+                  </p>
+                </div>
+              )}
 
               {/* 模型白名单配置 */}
               <div className="space-y-1">

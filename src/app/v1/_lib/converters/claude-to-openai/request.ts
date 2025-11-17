@@ -118,7 +118,26 @@ export function transformClaudeRequestToOpenAI(
   request: Record<string, unknown>,
   stream: boolean
 ): Record<string, unknown> {
+  // 参数验证
+  if (!model || typeof model !== "string") {
+    logger.error("[Claude→OpenAI] Invalid model parameter", { model });
+    throw new Error("Model parameter is required and must be a string");
+  }
+
+  if (!request || typeof request !== "object") {
+    logger.error("[Claude→OpenAI] Invalid request parameter", { request });
+    throw new Error("Request parameter is required and must be an object");
+  }
+
   const req = request as ClaudeRequest;
+
+  // 验证 messages 数组
+  if (!Array.isArray(req.messages) || req.messages.length === 0) {
+    logger.error("[Claude→OpenAI] Invalid or empty messages array", {
+      messages: req.messages,
+    });
+    throw new Error("Messages array is required and must not be empty");
+  }
 
   // 检测是否为 count_tokens 请求
   // Claude count_tokens 端点不支持 stream，OpenAI 也应该禁用 stream
@@ -168,7 +187,8 @@ export function transformClaudeRequestToOpenAI(
 
   // 2. 处理 messages 数组
   if (req.messages && Array.isArray(req.messages)) {
-    for (const message of req.messages) {
+    for (let idx = 0; idx < req.messages.length; idx++) {
+      const message = req.messages[idx];
       const role = message.role;
       const content = message.content;
 
@@ -215,9 +235,29 @@ export function transformClaudeRequestToOpenAI(
                   // 构建 data URL
                   const mediaType = source.media_type || "application/octet-stream";
                   const data = source.data || "";
-                  imageUrl = `data:${mediaType};base64,${data}`;
+
+                  if (!data) {
+                    logger.warn("[Claude→OpenAI] Empty base64 image data", {
+                      messageIndex: idx,
+                      partType: part.type,
+                    });
+                  } else {
+                    imageUrl = `data:${mediaType};base64,${data}`;
+                  }
                 } else if (source.type === "url") {
                   imageUrl = source.url || "";
+
+                  if (!imageUrl) {
+                    logger.warn("[Claude→OpenAI] Empty image URL", {
+                      messageIndex: idx,
+                      partType: part.type,
+                    });
+                  }
+                } else {
+                  logger.warn("[Claude→OpenAI] Unknown image source type", {
+                    messageIndex: idx,
+                    sourceType: source.type,
+                  });
                 }
 
                 if (imageUrl) {
@@ -228,7 +268,19 @@ export function transformClaudeRequestToOpenAI(
                       detail: "auto",
                     },
                   });
+                  // 仅在开发环境记录详细日志，避免生产环境日志暴增
+                  if (process.env.NODE_ENV === "development") {
+                    logger.debug("[Claude→OpenAI] Converted image content", {
+                      messageIndex: idx,
+                      sourceType: source.type,
+                      urlLength: imageUrl.length,
+                    });
+                  }
                 }
+              } else {
+                logger.warn("[Claude→OpenAI] Image part missing source", {
+                  messageIndex: idx,
+                });
               }
               break;
             }
@@ -236,6 +288,16 @@ export function transformClaudeRequestToOpenAI(
             case "tool_use": {
               // 单独处理 tool_use（作为 tool_calls）
               hasToolUse = true;
+
+              // 验证必需字段
+              if (!part.id || !part.name) {
+                logger.error("[Claude→OpenAI] Invalid tool_use: missing id or name", {
+                  messageIndex: idx,
+                  toolUseId: part.id,
+                  toolUseName: part.name,
+                });
+                throw new Error("tool_use must have both id and name");
+              }
 
               // 先保存当前的文本内容（如果有）
               if (contentParts.length > 0) {
@@ -247,13 +309,23 @@ export function transformClaudeRequestToOpenAI(
               }
 
               const toolUse = {
-                id: part.id || "",
+                id: part.id,
                 type: "function",
                 function: {
-                  name: part.name || "",
+                  name: part.name,
                   arguments: JSON.stringify(part.input || {}),
                 },
               };
+
+              // 仅在开发环境记录详细日志
+              if (process.env.NODE_ENV === "development") {
+                logger.debug("[Claude→OpenAI] Converted tool_use to tool_calls", {
+                  messageIndex: idx,
+                  toolId: part.id,
+                  toolName: part.name,
+                  hasInput: !!part.input,
+                });
+              }
 
               // 添加 assistant 消息with tool_calls
               output.messages.push({
@@ -267,6 +339,14 @@ export function transformClaudeRequestToOpenAI(
             case "tool_result": {
               // 单独处理 tool_result（作为 tool 角色消息）
               hasToolResult = true;
+
+              // 验证必需字段
+              if (!part.tool_use_id) {
+                logger.error("[Claude→OpenAI] Invalid tool_result: missing tool_use_id", {
+                  messageIndex: idx,
+                });
+                throw new Error("tool_result must have tool_use_id");
+              }
 
               // 先保存当前的文本内容（如果有）
               if (contentParts.length > 0) {
@@ -291,15 +371,39 @@ export function transformClaudeRequestToOpenAI(
                     return String(item);
                   })
                   .join("");
+              } else if (toolResultContent !== undefined) {
+                logger.warn("[Claude→OpenAI] Unexpected tool_result content type", {
+                  messageIndex: idx,
+                  contentType: typeof toolResultContent,
+                });
+                outputStr = String(toolResultContent);
+              }
+
+              // 仅在开发环境记录详细日志
+              if (process.env.NODE_ENV === "development") {
+                logger.debug("[Claude→OpenAI] Converted tool_result to tool message", {
+                  messageIndex: idx,
+                  toolUseId: part.tool_use_id,
+                  contentLength: outputStr.length,
+                });
               }
 
               const toolResult = {
                 role: "tool",
                 content: outputStr,
-                tool_call_id: part.tool_use_id || "",
+                tool_call_id: part.tool_use_id,
               };
 
               output.messages.push(toolResult);
+              break;
+            }
+
+            default: {
+              // 处理未知的 content 类型
+              logger.warn("[Claude→OpenAI] Unknown content part type, skipping", {
+                messageIndex: idx,
+                partType: part.type,
+              });
               break;
             }
           }
@@ -380,7 +484,7 @@ export function transformClaudeRequestToOpenAI(
   }
 
   // 5. 传递其他参数
-  if (req.max_tokens) {
+  if (req.max_tokens !== undefined) {
     // 特殊处理：count_tokens 请求（max_tokens=0）
     // OpenAI 不支持 max_tokens=0，使用 1 来模拟 token 计数
     if (isCountTokens && req.max_tokens === 0) {
@@ -388,10 +492,20 @@ export function transformClaudeRequestToOpenAI(
       logger.debug("[Claude→OpenAI] Adjusted max_tokens for count_tokens endpoint", {
         original: 0,
         adjusted: 1,
+        note: "OpenAI does not support max_tokens=0, using 1 to simulate token counting",
       });
     } else {
       output.max_tokens = req.max_tokens;
+      // 仅在开发环境记录详细日志
+      if (process.env.NODE_ENV === "development") {
+        logger.debug("[Claude→OpenAI] Forwarding max_tokens", {
+          value: req.max_tokens,
+          isCountTokens,
+        });
+      }
     }
+  } else if (process.env.NODE_ENV === "development") {
+    logger.debug("[Claude→OpenAI] No max_tokens specified in request");
   }
 
   if (req.temperature !== undefined) {

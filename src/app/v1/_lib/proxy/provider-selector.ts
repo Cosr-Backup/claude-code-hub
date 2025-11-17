@@ -21,7 +21,10 @@ import type { ProviderChainItem } from "@/types/message";
  *
  * 2. 非 Claude 模型请求 (gpt-*, gemini-*, 或其他任意模型)：
  *    - Anthropic 提供商：不支持（仅支持 Claude 模型）
- *    - 非 Anthropic 提供商（codex, gemini-cli, openai-compatible）：
+ *    - openai-compatible 供应商：
+ *      a. 必须勾选 joinCodexPool 才能参与 Codex 请求（与 joinClaudePool 保持一致）
+ *      b. 勾选后，根据 allowedModels 判断（未设置则接受任意模型）
+ *    - 原生 Codex/Gemini CLI 供应商：
  *      a. 如果未设置 allowedModels（null 或空数组）：接受任意模型
  *      b. 如果设置了 allowedModels：检查模型是否在声明列表中，或有模型重定向配置
  *      注意：allowedModels 是声明性列表（用户可填写任意字符串），用于调度器匹配，不是真实模型校验
@@ -84,6 +87,35 @@ function providerSupportsModel(provider: Provider, requestedModel: string): bool
   }
 
   // 2b. 非 Anthropic 提供商（codex, gemini-cli, openai-compatible）
+
+  // 2b-1. 对于 openai-compatible 供应商参与 Codex 调度池的情况
+  // 需要显式勾选 joinCodexPool（与 joinClaudePool 保持一致的设计）
+  const isCodexProvider = provider.providerType === "codex";
+
+  if (!isCodexProvider && provider.providerType === "openai-compatible") {
+    // openai-compatible 供应商需要勾选 joinCodexPool 才能参与 Codex 请求
+    if (!provider.joinCodexPool) {
+      return false;
+    }
+
+    // 已勾选 joinCodexPool，检查 allowedModels
+    if (provider.allowedModels && provider.allowedModels.length > 0) {
+      // 检查原始模型或重定向后的模型是否在列表中
+      if (provider.allowedModels.includes(requestedModel)) {
+        return true;
+      }
+      const redirectedModel = provider.modelRedirects?.[requestedModel];
+      if (redirectedModel && provider.allowedModels.includes(redirectedModel)) {
+        return true;
+      }
+      return false;
+    }
+
+    // 未设置 allowedModels：允许所有模型
+    return true;
+  }
+
+  // 2b-2. 原生 Codex/Gemini CLI 供应商的逻辑（保持不变）
   // allowedModels 是声明列表，用于调度器匹配提供商
   // 用户可以手动填写任意模型名称（不限于真实模型），用于声明该提供商"支持"哪些模型
 

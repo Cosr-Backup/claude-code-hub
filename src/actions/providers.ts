@@ -120,6 +120,7 @@ export async function getProviders(): Promise<ProviderDisplay[]> {
         modelRedirects: provider.modelRedirects,
         allowedModels: provider.allowedModels,
         joinClaudePool: provider.joinClaudePool,
+        joinCodexPool: provider.joinCodexPool,
         codexInstructionsStrategy: provider.codexInstructionsStrategy,
         limit5hUsd: provider.limit5hUsd,
         limitWeeklyUsd: provider.limitWeeklyUsd,
@@ -172,6 +173,7 @@ export async function addProvider(data: {
   model_redirects?: Record<string, string> | null;
   allowed_models?: string[] | null;
   join_claude_pool?: boolean;
+  join_codex_pool?: boolean;
   limit_5h_usd?: number | null;
   limit_weekly_usd?: number | null;
   limit_monthly_usd?: number | null;

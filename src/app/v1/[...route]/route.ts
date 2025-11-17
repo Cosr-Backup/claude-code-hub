@@ -23,7 +23,8 @@ const app = new Hono().basePath("/v1");
 // OpenAI Compatible API 路由
 app.post("/chat/completions", handleChatCompletions);
 
-// Response API 路由（支持 Codex/Gemini CLI）
+// Response API 路由（Codex 协议）
+// 注意：/v1/responses 是 Codex 协议，不是 Gemini CLI
 app.all("/responses", handleProxyRequest);
 app.all("/responses/*", handleProxyRequest);
 

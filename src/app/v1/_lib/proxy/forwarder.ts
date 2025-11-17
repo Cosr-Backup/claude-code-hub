@@ -722,8 +722,11 @@ export class ProxyForwarder {
     }
 
     // OpenAI Compatible 供应商：使用 /v1/chat/completions 端点
-    // 将 Claude 的 /v1/messages 路径重写为 OpenAI 标准端点
-    if (toFormat === "openai-compatible" && fromFormat === "claude") {
+    // 将 Claude 的 /v1/messages 和 Codex 的 /v1/responses 路径重写为 OpenAI 标准端点
+    if (
+      toFormat === "openai-compatible" &&
+      (fromFormat === "claude" || fromFormat === "codex")
+    ) {
       forwardUrl = new URL(session.requestUrl);
       const originalPath = forwardUrl.pathname;
 
@@ -738,7 +741,7 @@ export class ProxyForwarder {
           note: "Using max_tokens=1 to simulate token counting",
         });
       } else {
-        // 标准 messages 端点
+        // 标准 messages/responses 端点
         forwardUrl.pathname = "/v1/chat/completions";
         logger.debug("ProxyForwarder: OpenAI Compatible request path rewrite", {
           from: originalPath,

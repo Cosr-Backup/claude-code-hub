@@ -1,0 +1,1 @@
+ALTER TABLE "providers" ADD COLUMN "join_codex_pool" boolean DEFAULT false;

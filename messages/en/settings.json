@@ -907,6 +907,11 @@
             "desc": "When enabled, this provider will participate in load balancing with Claude-type providers",
             "help": "Available only when there is a redirect mapping to claude-* models. When users request claude-* models, this provider also joins scheduling."
           },
+          "joinCodexPool": {
+            "label": "Join Codex Routing Pool",
+            "desc": "When enabled, this provider will participate in /v1/responses request conversion and routing",
+            "help": "Only effective for openai-compatible providers. When enabled, this provider will participate in routing and format conversion when clients access the /v1/responses endpoint."
+          },
           "modelWhitelist": {
             "title": "Model Allowlist",
             "desc": "Restrict which models this provider can serve. By default, a provider can serve all models of its type.",

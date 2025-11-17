@@ -32,6 +32,9 @@ export interface Provider {
   // 加入 Claude 调度池：仅对非 Anthropic 提供商有效
   joinClaudePool: boolean;
 
+  // 加入 Codex 调度池：仅对非 Codex 提供商有效（特别是 openai-compatible）
+  joinCodexPool: boolean;
+
   // Codex Instructions 策略：控制如何处理 Codex 请求的 instructions 字段
   // 仅对 providerType = 'codex' 的供应商有效
   codexInstructionsStrategy: CodexInstructionsStrategy;
@@ -89,6 +92,8 @@ export interface ProviderDisplay {
   allowedModels: string[] | null;
   // 加入 Claude 调度池
   joinClaudePool: boolean;
+  // 加入 Codex 调度池
+  joinCodexPool: boolean;
   // Codex Instructions 策略
   codexInstructionsStrategy: CodexInstructionsStrategy;
   // 金额限流配置
@@ -139,6 +144,7 @@ export interface CreateProviderData {
   model_redirects?: Record<string, string> | null;
   allowed_models?: string[] | null;
   join_claude_pool?: boolean;
+  join_codex_pool?: boolean;
   codex_instructions_strategy?: CodexInstructionsStrategy;
 
   // 金额限流配置
@@ -190,6 +196,7 @@ export interface UpdateProviderData {
   model_redirects?: Record<string, string> | null;
   allowed_models?: string[] | null;
   join_claude_pool?: boolean;
+  join_codex_pool?: boolean;
   codex_instructions_strategy?: CodexInstructionsStrategy;
 
   // 金额限流配置

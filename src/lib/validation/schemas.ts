@@ -118,6 +118,7 @@ export const CreateProviderSchema = z.object({
   model_redirects: z.record(z.string(), z.string()).nullable().optional(),
   allowed_models: z.array(z.string()).nullable().optional(),
   join_claude_pool: z.boolean().optional().default(false),
+  join_codex_pool: z.boolean().optional().default(false),
   // Codex Instructions 策略
   codex_instructions_strategy: z
     .enum(["auto", "force_official", "keep_original"])
@@ -216,6 +217,7 @@ export const UpdateProviderSchema = z
     model_redirects: z.record(z.string(), z.string()).nullable().optional(),
     allowed_models: z.array(z.string()).nullable().optional(),
     join_claude_pool: z.boolean().optional(),
+    join_codex_pool: z.boolean().optional(),
     codex_instructions_strategy: z.enum(["auto", "force_official", "keep_original"]).optional(),
     // 金额限流配置
     limit_5h_usd: z.coerce

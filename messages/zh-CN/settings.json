@@ -519,6 +519,11 @@
             "desc": "启用后，此供应商将与 Claude 类型供应商一起参与负载均衡调度",
             "help": "仅当模型重定向配置中存在映射到 claude-* 模型时可用。启用后，当用户请求 claude-* 模型时，此供应商也会参与调度选择。"
           },
+          "joinCodexPool": {
+            "label": "加入 Codex 调度池",
+            "desc": "启用后，此供应商将参与 /v1/responses 请求的转换和调度",
+            "help": "仅对 openai-compatible 类型供应商有效。启用后，当客户端访问 /v1/responses 端点时，此供应商会参与调度并进行格式转换。"
+          },
           "modelWhitelist": {
             "title": "模型白名单",
             "desc": "限制此供应商可以处理的模型。默认情况下，供应商可以处理该类型下的所有模型。",
