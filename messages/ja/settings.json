@@ -685,7 +685,7 @@
       "providerNameRequired": "服务商名称 *",
       "providerType": "プロバイダータイプ",
       "providerTypeDesc": "选择供应商的 API 格式类型。",
-      "providerTypeDisabledNote": "注：Gemini CLI 和 OpenAI Compatible 类型功能正在开发中，暂不可用",
+      "providerTypeDisabledNote": "注: Gemini CLI タイプは開発中のため、現在は利用できません",
       "proxy": "プロキシ",
       "proxyAddressFormats": "支持格式:",
       "proxyAddressLabel": "代理地址",
@@ -809,7 +809,7 @@
             "placeholder": "プロバイダー種別を選択"
           },
           "providerTypeDesc": "プロバイダーの API 形式を選択します。",
-          "providerTypeDisabledNote": "注: Gemini CLI と OpenAI Compatible は開発中のため、現在は使用できません",
+          "providerTypeDisabledNote": "注: Gemini CLI タイプは開発中のため、現在は利用できません",
           "modelRedirects": {
             "label": "モデルリダイレクト設定",
             "optional": "（任意）"

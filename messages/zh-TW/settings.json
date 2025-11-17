@@ -710,7 +710,7 @@
       "providerNameRequired": "服务商名称 *",
       "providerType": "供應商類型",
       "providerTypeDesc": "选择供应商的 API 格式类型。",
-      "providerTypeDisabledNote": "注：Gemini CLI 和 OpenAI Compatible 类型功能正在开发中，暂不可用",
+      "providerTypeDisabledNote": "註：Gemini CLI 類型功能開發中，暫不可用",
       "proxy": "代理",
       "proxyAddressFormats": "支持格式:",
       "proxyAddressLabel": "代理地址",
@@ -834,7 +834,7 @@
             "placeholder": "選擇供應商類型"
           },
           "providerTypeDesc": "選擇供應商的 API 格式類型。",
-          "providerTypeDisabledNote": "註：Gemini CLI 與 OpenAI Compatible 類型開發中，暫不可用",
+          "providerTypeDisabledNote": "註：Gemini CLI 類型功能開發中，暫不可用",
           "modelRedirects": {
             "label": "模型重定向設定",
             "optional": "（選填）"

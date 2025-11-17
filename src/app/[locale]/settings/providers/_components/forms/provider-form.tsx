@@ -515,14 +515,14 @@ export function ProviderForm({
                     <SelectItem value="claude">{t("providerTypes.claude")}</SelectItem>
                     <SelectItem value="claude-auth">{t("providerTypes.claudeAuth")}</SelectItem>
                     <SelectItem value="codex">{t("providerTypes.codex")}</SelectItem>
+                    <SelectItem value="openai-compatible" disabled={false}>
+                      {t("providerTypes.openaiCompatible")}
+                    </SelectItem>
                     <SelectItem value="gemini-cli" disabled={true}>
                       <>
                         {t("providerTypes.geminiCli")}{" "}
                         {t("providerTypes.geminiCliDisabled")}
                       </>
-                    </SelectItem>
-                    <SelectItem value="openai-compatible" disabled={false}>
-                      {t("providerTypes.openaiCompatible")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -553,12 +553,10 @@ export function ProviderForm({
               {/* joinClaudePool 开关 - 仅非 Claude 供应商显示 */}
               {providerType !== "claude" &&
                 (() => {
-                  // 检查是否有重定向到 Claude 模型的映射
+                  // 检查是否有重定向到 Claude 模型的映射（忽略大小写和前后空格）
                   const hasClaudeRedirects = Object.values(modelRedirects).some((target) =>
-                    target.startsWith("claude-")
+                    target?.trim().toLowerCase().startsWith("claude-")
                   );
-
-                  if (!hasClaudeRedirects) return null;
 
                   return (
                     <div className="space-y-2">
@@ -575,10 +573,14 @@ export function ProviderForm({
                           id={isEdit ? "edit-join-claude-pool" : "join-claude-pool"}
                           checked={joinClaudePool}
                           onCheckedChange={setJoinClaudePool}
-                          disabled={isPending}
+                          disabled={isPending || !hasClaudeRedirects}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p
+                        className={`text-xs ${
+                          hasClaudeRedirects ? "text-muted-foreground" : "text-amber-600"
+                        }`}
+                      >
                         {t("sections.routing.joinClaudePool.help")}
                       </p>
                     </div>
@@ -1199,34 +1201,39 @@ export function ProviderForm({
                   <p className="text-xs text-muted-foreground">
                     {t("sections.codexStrategy.hint")}
                   </p>
-                  <div className="space-y-2 rounded-md border border-border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="codex-client-spoofing">
-                          {t("sections.codexStrategy.spoof.label")}
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          {t("sections.codexStrategy.spoof.desc")}
-                        </p>
-                      </div>
-                      <Switch
-                        id="codex-client-spoofing"
-                        checked={codexClientSpoofing}
-                        onCheckedChange={setCodexClientSpoofing}
-                        disabled={isPending}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("sections.codexStrategy.spoof.hint")}
-                    </p>
-                  </div>
                 </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
         )}
 
-        {(providerType === "claude" || providerType === "claude-auth") && (
+        {(providerType === "codex" || providerType === "openai-compatible") && (
+          <div className="space-y-2 rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm font-medium">
+                  {t("sections.codexStrategy.spoof.label")}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("sections.codexStrategy.spoof.desc")}
+                </p>
+              </div>
+              <Switch
+                id="codex-client-spoofing"
+                checked={codexClientSpoofing}
+                onCheckedChange={setCodexClientSpoofing}
+                disabled={isPending}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("sections.codexStrategy.spoof.hint")}
+            </p>
+          </div>
+        )}
+
+        {(providerType === "claude" ||
+          providerType === "claude-auth" ||
+          providerType === "openai-compatible") && (
           <div className="space-y-2 rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">

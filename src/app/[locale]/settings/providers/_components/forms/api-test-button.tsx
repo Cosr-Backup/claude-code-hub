@@ -30,6 +30,7 @@ const providerTypeToApiFormat: Partial<Record<ProviderType, ApiFormat>> = {
   "claude-auth": "anthropic-messages",
   codex: "openai-responses",
   "openai-compatible": "openai-chat",
+  // gemini-cli 功能开发中，不暴露在测试入口
 };
 
 const apiFormatDefaultModel: Record<ApiFormat, string> = {
@@ -72,10 +73,9 @@ export function ApiTestButton({
   providerId,
   providerType,
   allowedModels = [],
-  enableMultiProviderTypes,
+  enableMultiProviderTypes: _enableMultiProviderTypes,
 }: ApiTestButtonProps) {
   const t = useTranslations("settings.providers.form.apiTest");
-  const providerTypeT = useTranslations("settings.providers.form.providerTypes");
   const normalizedAllowedModels = useMemo(() => {
     const unique = new Set<string>();
     allowedModels.forEach((model) => {
@@ -290,12 +290,7 @@ export function ApiTestButton({
             <SelectItem value="anthropic-messages">
               {t("formatAnthropicMessages")}
             </SelectItem>
-            <SelectItem value="openai-chat" disabled={!enableMultiProviderTypes}>
-              <>
-                {t("formatOpenAIChat")}
-                {!enableMultiProviderTypes && providerTypeT("openaiCompatibleDisabled")}
-              </>
-            </SelectItem>
+            <SelectItem value="openai-chat">{t("formatOpenAIChat")}</SelectItem>
             <SelectItem value="openai-responses">{t("formatOpenAIResponses")}</SelectItem>
           </SelectContent>
         </Select>

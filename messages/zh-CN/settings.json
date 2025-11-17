@@ -220,7 +220,7 @@
         "testing": "测试中...",
         "apiFormat": "供应商类型",
         "selectApiFormat": "选择要测试的供应商类型",
-        "apiFormatDesc": "默认同步路由配置中的供应商类型，除非手动修改",
+        "apiFormatDesc": "选择供应商的 API 格式类型。",
         "formatAnthropicMessages": "Claude (Anthropic Messages API)",
         "formatOpenAIChat": "OpenAI Compatible",
         "formatOpenAIResponses": "Codex (Response API)",
@@ -353,7 +353,7 @@
       "routingConfigSummary": "{models} 个模型白名单, {redirects} 个重定向",
       "routingConfigNone": "未配置",
       "providerTypeDesc": "选择供应商的 API 格式类型。",
-      "providerTypeDisabledNote": "注：Gemini CLI 和 OpenAI Compatible 类型功能正在开发中，暂不可用",
+      "providerTypeDisabledNote": "注：Gemini CLI 类型功能正在开发中，暂不可用",
       "modelRedirectsLabel": "模型重定向配置",
       "modelRedirectsOptional": "(可选)",
       "modelRedirectsEmpty": "暂无重定向规则。添加规则后，系统将自动重写请求中的模型名称。",
@@ -509,7 +509,7 @@
             "placeholder": "选择供应商类型"
           },
           "providerTypeDesc": "选择供应商的 API 格式类型。",
-          "providerTypeDisabledNote": "注：Gemini CLI 和 OpenAI Compatible 类型功能正在开发中，暂不可用",
+          "providerTypeDisabledNote": "注：Gemini CLI 类型功能正在开发中，暂不可用",
           "modelRedirects": {
             "label": "模型重定向配置",
             "optional": "(可选)"

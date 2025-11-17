@@ -773,7 +773,7 @@
       "providerNameRequired": "Provider Name *",
       "providerType": "Provider Type",
       "providerTypeDesc": "Select the API format type for the provider.",
-      "providerTypeDisabledNote": "Note: Gemini CLI and OpenAI Compatible types are under development",
+      "providerTypeDisabledNote": "Note: Gemini CLI type is under development",
       "proxy": "Proxy",
       "proxyAddressFormats": "Supported formats:",
       "proxyAddressLabel": "Proxy Address",
@@ -897,7 +897,7 @@
             "placeholder": "Select provider type"
           },
           "providerTypeDesc": "Choose the API format type of the provider.",
-          "providerTypeDisabledNote": "Note: Gemini CLI and OpenAI Compatible are under development and currently unavailable",
+          "providerTypeDisabledNote": "Note: Gemini CLI type is under development and currently unavailable",
           "modelRedirects": {
             "label": "Model Redirects",
             "optional": "(optional)"

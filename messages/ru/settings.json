@@ -685,7 +685,7 @@
       "providerNameRequired": "Имя поставщика *",
       "providerType": "Тип поставщика",
       "providerTypeDesc": "Выберите тип формата API поставщика.",
-      "providerTypeDisabledNote": "Примечание: функции типов Gemini CLI и OpenAI Compatible находятся в разработке и временно недоступны",
+      "providerTypeDisabledNote": "Примечание: тип Gemini CLI находится в разработке и временно недоступен",
       "proxy": "Прокси",
       "proxyAddressFormats": "Поддерживаемые форматы:",
       "proxyAddressLabel": "Адрес прокси",
@@ -809,7 +809,7 @@
             "placeholder": "Выберите тип провайдера"
           },
           "providerTypeDesc": "Выберите формат API провайдера.",
-          "providerTypeDisabledNote": "Примечание: типы Gemini CLI и OpenAI Compatible находятся в разработке и пока недоступны",
+          "providerTypeDisabledNote": "Примечание: тип Gemini CLI находится в разработке и пока недоступен",
           "modelRedirects": {
             "label": "Перенаправление моделей",
             "optional": "(необязательно)"
