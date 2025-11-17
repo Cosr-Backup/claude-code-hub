@@ -3,7 +3,7 @@ import type { Provider } from "@/types/provider";
 import type { User } from "@/types/user";
 import type { Key } from "@/types/key";
 import type { ProviderChainItem } from "@/types/message";
-import type { ClientFormat } from "./format-mapper";
+import { detectClientFormat, type ClientFormat } from "./format-mapper";
 import type { ProviderType } from "@/types/provider";
 
 export interface AuthState {
@@ -119,7 +119,7 @@ export class ProxySession {
           : null,
     };
 
-    return new ProxySession({
+    const session = new ProxySession({
       startTime,
       method,
       requestUrl,
@@ -130,6 +130,23 @@ export class ProxySession {
       context: c,
       clientAbortSignal,
     });
+
+    // 优先根据 URL 路径判断请求格式
+    const normalizedPath = requestUrl.pathname.toLowerCase();
+    let formatFromPath: ClientFormat | null = null;
+    if (normalizedPath.startsWith("/v1/chat/completions")) {
+      formatFromPath = "openai";
+    } else if (normalizedPath.startsWith("/v1/responses")) {
+      formatFromPath = "response";
+    } else if (normalizedPath.startsWith("/v1/messages")) {
+      formatFromPath = "claude";
+    }
+
+    // 回退到基于请求体的自动检测
+    const detectedFormat = formatFromPath ?? detectClientFormat(bodyResult.requestMessage);
+    session.setOriginalFormat(detectedFormat);
+
+    return session;
   }
 
   setAuthState(state: AuthState): void {

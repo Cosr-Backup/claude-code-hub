@@ -23,8 +23,9 @@ const app = new Hono().basePath("/v1");
 // OpenAI Compatible API 路由
 app.post("/chat/completions", handleChatCompletions);
 
-// Response API 路由（支持 Codex）
-app.post("/responses", handleChatCompletions); // OpenAI
+// Response API 路由（支持 Codex/Gemini CLI）
+app.all("/responses", handleProxyRequest);
+app.all("/responses/*", handleProxyRequest);
 
 // Claude Messages API 路由（显式声明）
 app.all("/messages", handleProxyRequest);
