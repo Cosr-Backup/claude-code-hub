@@ -34,7 +34,8 @@ WORKDIR /app
 # 需要使用官方 PostgreSQL APT 仓库以获取最新版本
 RUN apt-get update && \
     apt-get install -y gnupg curl ca-certificates && \
-    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg && \
+    (curl --retry 3 --retry-delay 2 --max-time 30 --http1.1 -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg || \
+     curl --retry 3 --retry-delay 2 --max-time 30 -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg) && \
     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update && \
     apt-get install -y postgresql-client-18 && \
