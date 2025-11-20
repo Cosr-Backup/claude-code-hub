@@ -255,10 +255,10 @@ export function KeyListHeader({
                           providerGroup: activeUser.providerGroup || null,
                           createdAt: new Date(),
                           updatedAt: new Date(),
-                          limit5hUsd: activeUser.limit5hUsd ?? undefined,
-                          limitWeeklyUsd: activeUser.limitWeeklyUsd ?? undefined,
-                          limitMonthlyUsd: activeUser.limitMonthlyUsd ?? undefined,
-                          limitConcurrentSessions: activeUser.limitConcurrentSessions ?? undefined,
+                          limit5hUsd: activeUser.limit5hUsd ?? null,
+                          limitWeeklyUsd: activeUser.limitWeeklyUsd ?? null,
+                          limitMonthlyUsd: activeUser.limitMonthlyUsd ?? null,
+                          limitConcurrentSessions: activeUser.limitConcurrentSessions ?? null,
                         }
                       : undefined
                   }

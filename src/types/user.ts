@@ -13,10 +13,10 @@ export interface User {
   updatedAt: Date;
   deletedAt?: Date;
   // User-level quota fields
-  limit5hUsd?: number; // 5小时消费上限（美元）
-  limitWeeklyUsd?: number; // 周消费上限（美元）
-  limitMonthlyUsd?: number; // 月消费上限（美元）
-  limitConcurrentSessions?: number; // 并发 Session 上限
+  limit5hUsd: number | null; // 5小时消费上限（美元）
+  limitWeeklyUsd: number | null; // 周消费上限（美元）
+  limitMonthlyUsd: number | null; // 月消费上限（美元）
+  limitConcurrentSessions: number | null; // 并发 Session 上限
 }
 
 /**

@@ -26,6 +26,10 @@ export async function validateKey(keyString: string): Promise<AuthSession | null
       rpm: 0,
       dailyQuota: 0,
       providerGroup: null,
+      limit5hUsd: null,
+      limitWeeklyUsd: null,
+      limitMonthlyUsd: null,
+      limitConcurrentSessions: null,
       createdAt: now,
       updatedAt: now,
     };
