@@ -1682,11 +1682,17 @@ async function executeProviderApiTest(
           ...options.headers(data.apiKey, { providerUrl: normalizedProviderUrl }),
           // 使用更完整的请求头，模拟真实 Claude CLI 行为
           // 避免被 Cloudflare Bot 检测拦截
-          "User-Agent": "claude-cli/2.0.33 (external, cli)",
+          "User-Agent": "claude-cli/2.0.50 (external, cli)",
+          "x-app": "cli", // ⭐ 关键：官方 CLI 标识，代理服务器通过此头部验证客户端
           Accept: "application/json, text/event-stream",
           "Accept-Language": "en-US,en;q=0.9",
           "Accept-Encoding": "gzip, deflate, br",
           Connection: "keep-alive",
+          // Stainless SDK 标识头（可选，但更接近官方客户端）
+          "X-Stainless-Lang": "js",
+          "X-Stainless-Package-Version": "0.70.0",
+          "X-Stainless-Runtime": "node",
+          "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify(options.body(model)),
         signal: AbortSignal.timeout(API_TEST_CONFIG.TIMEOUT_MS),

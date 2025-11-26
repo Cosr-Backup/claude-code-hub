@@ -635,7 +635,7 @@
         "disclaimer": {
           "title": "Notice",
           "realRequest": "This test sends a real request to the provider and may consume a small quota",
-          "resultReference": "Results may vary by provider and are for reference only",
+          "resultReference": "<strong>Results may vary by provider and are for reference only</strong>",
           "confirmConfig": "Please verify provider URL, API key, and model configuration"
         }
       },
