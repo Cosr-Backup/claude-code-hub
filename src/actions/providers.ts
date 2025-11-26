@@ -1243,13 +1243,16 @@ async function parseStreamResponse(response: Response): Promise<StreamParseResul
   let buffer = "";
   let currentData = "";
   let skippedChunks = 0;
+  let rawStreamData = ""; // 用于调试：记录原始流数据
 
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
+      const decoded = decoder.decode(value, { stream: true });
+      buffer += decoded;
+      rawStreamData += decoded; // 记录原始数据用于调试
       const lines = buffer.split("\n");
 
       // 保留最后一行（可能不完整）
@@ -1330,6 +1333,13 @@ async function parseStreamResponse(response: Response): Promise<StreamParseResul
   }
 
   if (chunks.length === 0) {
+    // 记录原始流数据用于调试
+    logger.debug("流式响应原始数据", {
+      rawDataPreview: clipText(rawStreamData, 500),
+      rawDataLength: rawStreamData.length,
+      skippedChunks,
+    });
+
     throw new Error(
       `未能从流式响应中解析出有效数据${skippedChunks > 0 ? `（跳过 ${skippedChunks} 个无效 chunk）` : ""}`
     );
